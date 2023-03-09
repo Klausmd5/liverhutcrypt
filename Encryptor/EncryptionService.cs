@@ -53,6 +53,8 @@ public class EncryptionService
     {
         byte[] passwords = Encoding.UTF8.GetBytes(password);
         byte[] salt = new byte[32];
+        
+        var name = outputFileName.Substring(0, outputFileName.Length - fileExt.Length);
         using (FileStream fsCrypt = new FileStream(outputFileName, FileMode.Open))
         {
             fsCrypt.Read(salt, 0, salt.Length);
@@ -64,9 +66,9 @@ public class EncryptionService
             AES.IV = key.GetBytes(AES.BlockSize / 8);
             AES.Padding = PaddingMode.PKCS7;
             AES.Mode = CipherMode.CFB;
+            
             using (CryptoStream cryptoStream = new CryptoStream(fsCrypt, AES.CreateDecryptor(), CryptoStreamMode.Read))
             {
-                var name = outputFileName.Substring(0, outputFileName.Length - fileExt.Length);
                 using (FileStream fsOut = new FileStream(name, FileMode.Create))
                 {
                     int read;
@@ -74,11 +76,11 @@ public class EncryptionService
                     while ((read = cryptoStream.Read(buffer, 0, buffer.Length)) > 0)
                     {
                         fsOut.Write(buffer, 0, read);
-                        Console.WriteLine("Decrypting file... {0}", name);
                     }
                 }
             }
         }
+        Console.WriteLine("Decrypting file... {0}", name);
         File.Delete(outputFileName);
     }
     
