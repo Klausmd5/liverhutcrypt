@@ -15,7 +15,7 @@ while (true)
         GetPassword();
         Console.WriteLine("Encrypting file...");
         var files = Directory.GetFiles(dir,"*.*", SearchOption.AllDirectories).ToList();
-        // files.ForEach(f => enc.FileEncrypt(f, password));
+        files.ForEach(f => enc.FileEncrypt(f, password));
         Console.WriteLine("Files Encrypted");
     }
 
@@ -24,7 +24,7 @@ while (true)
         GetPassword();
         Console.WriteLine("Decrypting file...");
         var files = Directory.GetFiles(dir,"*.*", SearchOption.AllDirectories).ToList();
-        // files.ForEach(f => enc.FileDecrypt(f, password));
+        files.ForEach(f => enc.FileDecrypt(f, password));
         Console.WriteLine("Files Decrypted");
     }
     
