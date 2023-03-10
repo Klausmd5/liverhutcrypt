@@ -2,9 +2,11 @@
 
 var enc = new EncryptionService();
 
+Console.WriteLine("Enter directory to encrypt/decrypt");
 var dir = Console.ReadLine();
 while (true)
 {
+    Console.WriteLine("Enter 'e' to encrypt or 'd' to decrypt");
     var input = Console.ReadLine();
     if (input == "e")
     {
