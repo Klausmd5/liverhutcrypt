@@ -1,13 +1,12 @@
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.VisualBasic.FileIO;
 
 namespace Encryptor;
 
 public class EncryptionService
 {
-    private const string fileExt = ".liverhut";
-    private List<string> _filesToDelete = new List<string>();
+    private const string FileExt = ".liverhut";
+    private readonly List<string> _filesToDelete = new();
 
     private static byte[] GenerateSalt()
     {
@@ -39,7 +38,7 @@ public class EncryptionService
             aes.Key = key.GetBytes(aes.KeySize / 8);
             aes.IV = key.GetBytes(aes.BlockSize / 8);
             aes.Mode = CipherMode.CFB;
-            using (FileStream fsCrypt = new FileStream(inputFile + fileExt, FileMode.Create, FileAccess.ReadWrite))
+            using (FileStream fsCrypt = new FileStream(inputFile + FileExt, FileMode.Create, FileAccess.ReadWrite))
             {
                 fsCrypt.Write(salt, 0, salt.Length);
                 using (CryptoStream cs = new CryptoStream(fsCrypt, aes.CreateEncryptor(), CryptoStreamMode.Write))
@@ -57,7 +56,7 @@ public class EncryptionService
             }
 
             Console.WriteLine("Encrypting file... {0}", inputFile);
-            File.SetAttributes(inputFile + fileExt, FileAttributes.Encrypted);
+            File.SetAttributes(inputFile + FileExt, FileAttributes.Encrypted);
             _filesToDelete.Add(inputFile);
         }
         catch (Exception e)
@@ -73,7 +72,7 @@ public class EncryptionService
             byte[] passwords = Encoding.UTF8.GetBytes(password);
             byte[] salt = new byte[32];
         
-            var name = outputFileName.Substring(0, outputFileName.Length - fileExt.Length);
+            var name = outputFileName.Substring(0, outputFileName.Length - FileExt.Length);
             using (FileStream fsCrypt = new FileStream(outputFileName, FileMode.Open))
             {
                 fsCrypt.ReadExactly(salt, 0, salt.Length);
