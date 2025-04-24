@@ -12,9 +12,9 @@ public class EncryptionService
     private static byte[] GenerateSalt()
     {
         byte[] data = new byte[32];
-        using (RNGCryptoServiceProvider rgnCryptoServiceProvider = new RNGCryptoServiceProvider())
+        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
         {
-            rgnCryptoServiceProvider.GetBytes(data);
+            rng.GetBytes(data);
         }
         return data;
     }
@@ -31,18 +31,18 @@ public class EncryptionService
         {
             byte[] salt = GenerateSalt();
             byte[] passwords = Encoding.UTF8.GetBytes(password);
-            RijndaelManaged AES = new RijndaelManaged();
-            AES.KeySize = 256; //aes 256 bit encryption c#
-            AES.BlockSize = 128; //aes 128 bit encryption c#
-            AES.Padding = PaddingMode.PKCS7;
-            var key = new Rfc2898DeriveBytes(passwords, salt, 50000);
-            AES.Key = key.GetBytes(AES.KeySize / 8);
-            AES.IV = key.GetBytes(AES.BlockSize / 8);
-            AES.Mode = CipherMode.CFB;
+            Aes aes = Aes.Create();
+            aes.KeySize = 256; //aes 256 bit encryption c#
+            aes.BlockSize = 128; //aes 128 bit encryption c#
+            aes.Padding = PaddingMode.PKCS7;
+            var key = new Rfc2898DeriveBytes(passwords, salt, 50000, HashAlgorithmName.SHA3_512);
+            aes.Key = key.GetBytes(aes.KeySize / 8);
+            aes.IV = key.GetBytes(aes.BlockSize / 8);
+            aes.Mode = CipherMode.CFB;
             using (FileStream fsCrypt = new FileStream(inputFile + fileExt, FileMode.Create, FileAccess.ReadWrite))
             {
                 fsCrypt.Write(salt, 0, salt.Length);
-                using (CryptoStream cs = new CryptoStream(fsCrypt, AES.CreateEncryptor(), CryptoStreamMode.Write))
+                using (CryptoStream cs = new CryptoStream(fsCrypt, aes.CreateEncryptor(), CryptoStreamMode.Write))
                 {
                     using (FileStream fsIn = new FileStream(inputFile, FileMode.Open))
                     {
@@ -76,17 +76,17 @@ public class EncryptionService
             var name = outputFileName.Substring(0, outputFileName.Length - fileExt.Length);
             using (FileStream fsCrypt = new FileStream(outputFileName, FileMode.Open))
             {
-                fsCrypt.Read(salt, 0, salt.Length);
-                RijndaelManaged AES = new RijndaelManaged();
-                AES.KeySize = 256;//aes 256 bit encryption c#
-                AES.BlockSize = 128;//aes 128 bit encryption c#
-                var key = new Rfc2898DeriveBytes(passwords, salt, 50000);
-                AES.Key = key.GetBytes(AES.KeySize / 8);
-                AES.IV = key.GetBytes(AES.BlockSize / 8);
-                AES.Padding = PaddingMode.PKCS7;
-                AES.Mode = CipherMode.CFB;
+                fsCrypt.ReadExactly(salt, 0, salt.Length);
+                Aes aes = Aes.Create();
+                aes.KeySize = 256;//aes 256 bit encryption c#
+                aes.BlockSize = 128;//aes 128 bit encryption c#
+                var key = new Rfc2898DeriveBytes(passwords, salt, 50000, HashAlgorithmName.SHA3_512);
+                aes.Key = key.GetBytes(aes.KeySize / 8);
+                aes.IV = key.GetBytes(aes.BlockSize / 8);
+                aes.Padding = PaddingMode.PKCS7;
+                aes.Mode = CipherMode.CFB;
             
-                using (CryptoStream cryptoStream = new CryptoStream(fsCrypt, AES.CreateDecryptor(), CryptoStreamMode.Read))
+                using (CryptoStream cryptoStream = new CryptoStream(fsCrypt, aes.CreateDecryptor(), CryptoStreamMode.Read))
                 {
                     using (FileStream fsOut = new FileStream(name, FileMode.Create))
                     {
